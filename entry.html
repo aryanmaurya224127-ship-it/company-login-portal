@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee-Attendance-Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      color: white;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      width: 400px;
+      box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+    }
+
+    button {
+      background: #00c6ff;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0072ff;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #message {
+      margin-top: 10px;
+      color: yellow;
+      font-weight: bold;
+    }
+
+    #admin-btn {
+      margin-top: 20px;
+      background: #ff6a00;
+    }
+
+    #log-view {
+      width: 100%;
+      height: 200px;
+      margin: 15px 0;
+      border-radius: 8px;
+      padding: 10px;
+      background: black;
+      color: #00ff00;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏢 Company Login Portal</h1>
+    
+    <!-- Login Box -->
+    <div id="login-box">
+      <input type="userId" id="userId" placeholder="Enter your ID">
+      <input type="password" id="password" placeholder="Enter your password">
+      <button onclick="login()">Login</button>
+      <p id="message"></p>
+    </div>
+
+    <!-- Welcome Box -->
+    <div id="welcome-box" class="hidden">
+      <h2 id="welcome"></h2>
+      <p id="time"></p>
+      <button onclick="logout()">Exit Office</button>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-box" class="hidden">
+      <h2>👨‍💼 Admin Panel</h2>
+      <textarea id="log-view" readonly></textarea>
+      <button onclick="clearLogs()">🗑 Clear Logs</button>
+      <button onclick="closeAdmin()">❌ Close</button>
+    </div>
+
+    <!-- Admin Login Button -->
+    <button id="admin-btn" onclick="openAdmin()">🔑 Admin Panel</button>
+  </div>
+
+  <script>
+    // Employee Database
+    const employees = {
+      1999: { name: "Vikas Kumar", password: "vikas@123" },
+      2005: { name: "Aryan", password: "aryan@123" },
+      1995: { name: "Shiv Shankar", password: "shiv@123" },
+      2000: { name: "Vipin", password: "vipin@123" },
+      2002: { name: "Alok", password: "alok@123" },
+      1997: { name: "Suraj", password: "suraj@123" },
+    };
+
+     
+    // Admin Password
+    const adminPassword = "admin@123";
+
+    // Login Function
+    function login() {
+      const userId = document.getElementById("userId").value;
+      const password = document.getElementById("password").value;
+      const message = document.getElementById("message");
+
+      if (employees[userId]) {
+        if (employees[userId].password === password) {
+          const now = new Date();
+          const entryTime = now.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+          document.getElementById("login-box").classList.add("hidden");
+          document.getElementById("welcome-box").classList.remove("hidden");
+
+          document.getElementById("welcome").innerText = `✅ Welcome, ${employees[userId].name}!`;
+          document.getElementById("time").innerText = `Entry Time: ${entryTime}`;
+
+          // Save log
+          let logs = localStorage.getItem("visitor_log") || "";
+          logs += `${employees[userId].name} entered at ${entryTime}\n`;
+          localStorage.setItem("visitor_log", logs);
+
+        } else {
+          message.innerText = "❌ Wrong password 🚫";
+        }
+      } else {
+        message.innerText = "❌ Wrong User ID 🚫";
+      }
+    }
+
+    // Logout Function
+    function logout() {
+      const now = new Date();
+      const exitTime = now.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+      const welcomeText = document.getElementById("welcome").innerText.replace("✅ Welcome, ", "");
+
+      document.getElementById("welcome-box").classList.add("hidden");
+      document.getElementById("login-box").classList.remove("hidden");
+      document.getElementById("message").innerText = "👋 Exit recorded.";
+
+      let logs = localStorage.getItem("visitor_log") || "";
+      logs += `${welcomeText} exited at ${exitTime}\n`;
+      localStorage.setItem("visitor_log", logs);
+    }
+
+    // Open Admin Panel
+    function openAdmin() {
+      const pass = prompt("Enter Admin Password:");
+      if (pass === adminPassword) {
+        document.getElementById("admin-box").classList.remove("hidden");
+        document.getElementById("login-box").classList.add("hidden");
+        document.getElementById("welcome-box").classList.add("hidden");
+
+        document.getElementById("log-view").value = localStorage.getItem("visitor_log") || "No logs yet...";
+      } else {
+        alert("❌ Wrong Admin Password 🚫");
+      }
+    }
+
+    // Close Admin Panel
+    function closeAdmin() {
+      document.getElementById("admin-box").classList.add("hidden");
+      document.getElementById("login-box").classList.remove("hidden");
+    }
+
+    // Clear Logs
+    function clearLogs() {
+      if (confirm("Are you sure you want to clear all logs?")) {
+        localStorage.removeItem("visitor_log");
+        document.getElementById("log-view").value = "Logs cleared.";
+      }
+    }
+  </script>
+</body>
+</html>
