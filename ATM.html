@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOB ATM Machine</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #2980b9, #6dd5fa);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .atm {
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      width: 380px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    input, button, select {
+      margin: 10px 0;
+      padding: 12px;
+      width: 90%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      background: #27ae60;
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #2ecc71;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      margin-top: 12px;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .success {
+      background: #eafaf1;
+      color: #2ecc71;
+      border: 1px solid #27ae60;
+    }
+
+    .error {
+      background: #fdecea;
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    }
+
+    .info {
+      background: #ebf5fb;
+      color: #2980b9;
+      border: 1px solid #3498db;
+    }
+
+    #history {
+      margin-top: 15px;
+      text-align: left;
+      max-height: 120px;
+      overflow-y: auto;
+      font-size: 14px;
+      border-top: 1px dashed #ccc;
+      padding-top: 10px;
+    }
+
+    #history p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="atm">
+    <h2>💳 WELCOME TO BOB ATM</h2>
+
+    <!-- Login Section -->
+    <div id="login">
+      <input type="text" id="username" placeholder="Enter Username">
+      <input type="password" id="pin" placeholder="Enter PIN">
+      <button onclick="login()">Login</button>
+      <p id="loginMsg" class="message"></p>
+    </div>
+
+    <!-- ATM Options Section -->
+    <div id="atmOptions" class="hidden">
+      <select id="choice" onchange="toggleWithdraw()">
+        <option value="2">Check Balance</option>
+        <option value="1">Withdraw</option>
+        <option value="3">Exit</option>
+      </select>
+      <input type="number" id="withdrawAmount" placeholder="Enter Amount (₹)" class="hidden">
+      <button onclick="performAction()">Submit</button>
+      <p id="atmMsg" class="message"></p>
+
+      <!-- Transaction History -->
+      <div id="history"></div>
+    </div>
+  </div>
+
+  <script>
+    const username = "aryan";
+    const pin = "1999";
+    let balance = 100000;
+    let history = [];
+
+    function login() {
+      const user = document.getElementById("username").value;
+      const enteredPin = document.getElementById("pin").value;
+      const loginMsg = document.getElementById("loginMsg");
+
+      if (user === username && enteredPin === pin) {
+        loginMsg.textContent = "✅ Login Successful!";
+        loginMsg.className = "message success";
+        setTimeout(() => {
+          document.getElementById("login").classList.add("hidden");
+          document.getElementById("atmOptions").classList.remove("hidden");
+        }, 800);
+      } else {
+        loginMsg.textContent = "❌ Invalid Username or PIN!";
+        loginMsg.className = "message error";
+      }
+    }
+
+    function toggleWithdraw() {
+      const choice = document.getElementById("choice").value;
+      const withdrawInput = document.getElementById("withdrawAmount");
+      withdrawInput.classList.toggle("hidden", choice !== "1");
+    }
+
+    function performAction() {
+      const choice = document.getElementById("choice").value;
+      const withdrawInput = document.getElementById("withdrawAmount");
+      const atmMsg = document.getElementById("atmMsg");
+
+      if (choice === "1") {  // Withdraw
+        const withdraw = Number(withdrawInput.value);
+        if (withdraw > 0) {
+          if (withdraw % 100 !== 0) {
+            atmMsg.textContent = "❌ Enter amount in multiples of 100!";
+            atmMsg.className = "message error";
+          } else if (withdraw > balance) {
+            atmMsg.textContent = "❌ Insufficient Balance!";
+            atmMsg.className = "message error";
+          } else {
+            balance -= withdraw;
+            atmMsg.textContent = `✅ Transaction Successful! Current Balance: ₹${balance}`;
+            atmMsg.className = "message success";
+            addHistory(`Withdrawn ₹${withdraw} | Balance: ₹${balance}`);
+          }
+          withdrawInput.value = "";
+        } else {
+          atmMsg.textContent = "❌ Enter a valid amount!";
+          atmMsg.className = "message error";
+        }
+
+      } else if (choice === "2") {  // Check Balance
+        atmMsg.textContent = `💰 Your Current Balance: ₹${balance}`;
+        atmMsg.className = "message info";
+        addHistory(`Checked Balance: ₹${balance}`);
+
+      } else if (choice === "3") {  // Exit
+        atmMsg.textContent = "👋 Thank you for using BOB ATM!";
+        atmMsg.className = "message info";
+        setTimeout(() => {
+          document.getElementById("atmOptions").classList.add("hidden");
+          document.getElementById("login").classList.remove("hidden");
+          document.getElementById("username").value = "";
+          document.getElementById("pin").value = "";
+          atmMsg.textContent = "";
+          history = [];
+          document.getElementById("history").innerHTML = "";
+        }, 1500);
+      }
+    }
+
+    function addHistory(entry) {
+      history.push(entry);
+      const historyDiv = document.getElementById("history");
+      historyDiv.innerHTML = history.map(item => `<p>• ${item}</p>`).join("");
+    }
+  </script>
+</body>
+</html>
